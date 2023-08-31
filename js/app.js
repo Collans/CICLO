@@ -34,6 +34,9 @@
             return isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Opera() || isMobile.Windows();
         }
     };
+    function addTouchClass() {
+        if (isMobile.any()) document.documentElement.classList.add("touch");
+    }
     function addLoadedClass() {
         if (!document.documentElement.classList.contains("loading")) window.addEventListener("load", (function() {
             setTimeout((function() {
@@ -41,10 +44,24 @@
             }), 0);
         }));
     }
+    function fullVHfix() {
+        const fullScreens = document.querySelectorAll("[data-fullscreen]");
+        if (fullScreens.length && isMobile.any()) {
+            window.addEventListener("resize", fixHeight);
+            function fixHeight() {
+                let vh = window.innerHeight * .01;
+                document.documentElement.style.setProperty("--vh", `${vh}px`);
+            }
+            fixHeight();
+        }
+    }
     function functions_FLS(message) {
         setTimeout((() => {
             if (window.FLS) console.log(message);
         }), 0);
+    }
+    function getDigFormat(item, sepp = " ") {
+        return item.toString().replace(/(\d)(?=(\d\d\d)+([^\d]|$))/g, `$1${sepp}`);
     }
     function uniqArray(array) {
         return array.filter((function(item, index, self) {
@@ -531,13 +548,15 @@
         }
         function digitsCountersAnimate(digitsCounter) {
             let startTimestamp = null;
-            const duration = parseInt(digitsCounter.dataset.digitsCounterSpeed) ? parseInt(digitsCounter.dataset.digitsCounterSpeed) : 1e3;
-            const startValue = parseInt(digitsCounter.dataset.digitsCounter);
+            const duration = parseFloat(digitsCounter.dataset.digitsCounterSpeed) ? parseFloat(digitsCounter.dataset.digitsCounterSpeed) : 1e3;
+            const startValue = parseFloat(digitsCounter.dataset.digitsCounter);
+            const format = digitsCounter.dataset.digitsCounterFormat ? digitsCounter.dataset.digitsCounterFormat : " ";
             const startPosition = 0;
             const step = timestamp => {
                 if (!startTimestamp) startTimestamp = timestamp;
                 const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                digitsCounter.innerHTML = Math.floor(progress * (startPosition + startValue));
+                const value = Math.floor(progress * (startPosition + startValue));
+                digitsCounter.innerHTML = typeof digitsCounter.dataset.digitsCounterFormat !== "undefined" ? getDigFormat(value, format) : value;
                 if (progress < 1) window.requestAnimationFrame(step);
             };
             window.requestAnimationFrame(step);
@@ -559,6 +578,8 @@
     }), 0);
     window["FLS"] = true;
     isWebp();
+    addTouchClass();
     addLoadedClass();
+    fullVHfix();
     digitsCounter();
 })();
