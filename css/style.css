@@ -775,6 +775,10 @@ h6 {
   counter-reset: item;
 }
 
+.page__section {
+  position: relative;
+}
+
 .page__section::after {
   counter-increment: item;
   content: counter(item, decimal-leading-zero);
